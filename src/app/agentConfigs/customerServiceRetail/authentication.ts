@@ -172,3 +172,64 @@ async function takePicture({ quality = 0.8 } = {}) {
 		stream.getTracks().forEach((t) => t.stop());
 	}
 }
+
+
+
+export interface Address {
+    houseNumber?: string;
+    road?: string;
+    neighbourhood?: string;
+    suburb?: string;
+    city?: string;
+    county?: string;
+    state?: string;
+    postcode?: string;
+    country?: string;
+    countryCode?: string;
+    [key: string]: any;
+}
+
+const NOMINATIM_BASE = "https://nominatim.openstreetmap.org/reverse";
+
+export interface ReverseGeocodeOptions {
+  /**
+   * An email to include in the User-Agent (per Nominatim policy)
+   */
+  email?: string;
+  /**
+   * Language code for the response, e.g. "en", "fr"
+   */
+  acceptLanguage?: string;
+}
+
+/**
+ * Given latitude and longitude, returns a parsed Address
+ * from OpenStreetMap's Nominatim API.
+ */
+export async function reverseGeocode(
+  lat: number,
+  lon: number,
+  options: ReverseGeocodeOptions = {}
+): Promise<Address> {
+  const params = new URLSearchParams({
+    format: "jsonv2",
+    lat: lat.toString(),
+    lon: lon.toString(),
+    addressdetails: "1",
+    ...options.acceptLanguage && { "accept-language": options.acceptLanguage },
+  });
+
+  const headers: Record<string, string> = {
+    "User-Agent": `ReverseGeocoder/1.0${options.email ? ` (${options.email})` : ""}`
+  };
+
+  const response = await fetch(`${NOMINATIM_BASE}?${params.toString()}`, { headers });
+  if (!response.ok) {
+    throw new Error(`Nominatim request failed: ${response.status} ${response.statusText}`);
+  }
+  const data = await response.json();
+  if (!data.address) {
+    throw new Error("No address returned from Nominatim");
+  }
+  return data.address as Address;
+}
