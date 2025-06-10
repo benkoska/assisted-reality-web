@@ -123,10 +123,6 @@ export class RealtimeClient {
 			this.#events.emit('audio_interrupted');
 		});
 
-		this.#session.on('guardrail_tripped', (info: any) => {
-			this.#events.emit('message', { type: 'guardrail_tripped', info });
-		});
-
 		// Wait for full connection establishment (data channel open).
 		await this.#session.connect({ apiKey: ek });
 

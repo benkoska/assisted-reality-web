@@ -58,13 +58,6 @@ export interface AgentConfig {
 
 export type AllAgentConfigsType = Record<string, AgentConfig[]>;
 
-export interface GuardrailResultType {
-  status: "IN_PROGRESS" | "DONE";
-  testText?: string; 
-  category?: ModerationCategory;
-  rationale?: string;
-}
-
 export interface TranscriptItem {
   itemId: string;
   type: "MESSAGE" | "BREADCRUMB";
@@ -76,7 +69,6 @@ export interface TranscriptItem {
   createdAtMs: number;
   status: "IN_PROGRESS" | "DONE";
   isHidden: boolean;
-  guardrailResult?: GuardrailResultType;
 }
 
 export interface Log {
@@ -137,11 +129,3 @@ export interface LoggedEvent {
   eventName: string;
   eventData: Record<string, any>; // can have arbitrary objects logged
 }
-
-// Update the GuardrailOutputZod schema to use the shared ModerationCategoryZod
-export const GuardrailOutputZod = z.object({
-  moderationRationale: z.string(),
-  moderationCategory: ModerationCategoryZod,
-});
-
-export type GuardrailOutput = z.infer<typeof GuardrailOutputZod>;
