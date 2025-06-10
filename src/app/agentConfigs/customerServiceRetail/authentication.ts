@@ -142,7 +142,7 @@ async function getUserGeolocation() {
  */
 async function takePicture({ quality = 0.8 } = {}) {
 	if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-		throw new Error("Camera API not supported by this browser.");
+		return "Failed to take a picture."
 	}
 
 	// 1) Request camera video stream
@@ -160,7 +160,7 @@ async function takePicture({ quality = 0.8 } = {}) {
 
 		const ctx = canvas.getContext("2d");
 		if (!ctx) {
-			throw new Error("Failed to get canvas context.");
+			return "Failed to take a picture."
 		}
 		ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
