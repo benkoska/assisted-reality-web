@@ -19,8 +19,3 @@ Assisted Reality is an experimental project that blends useful information direc
    ```
 4. Visit `http://localhost:3000` in your browser.
 
-## Contributing
-Pull requests are welcome! Feel free to open issues or submit improvements.
-
-## License
-This project is released under the [MIT License](LICENSE).
