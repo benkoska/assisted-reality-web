@@ -24,15 +24,12 @@ import { RealtimeClient } from "@/app/agentConfigs/realtimeClient";
 
 // Agent configs
 import { allAgentSets, defaultAgentSetKey } from "@/app/agentConfigs";
+
 // New SDK scenarios
-import { simpleHandoffScenario } from "@/app/agentConfigs/simpleHandoff";
 import { customerServiceRetailScenario } from "@/app/agentConfigs/customerServiceRetail";
-import { chatSupervisorScenario } from "@/app/agentConfigs/chatSupervisor";
 
 const sdkScenarioMap: Record<string, RealtimeAgent[]> = {
-  simpleHandoff: simpleHandoffScenario,
   customerServiceRetail: customerServiceRetailScenario,
-  chatSupervisor: chatSupervisorScenario,
 };
 
 import useAudioDownload from "./hooks/useAudioDownload";
@@ -768,6 +765,7 @@ function App() {
           </label>
           <div className="relative inline-block">
             <select
+              title="Select Scenario"
               value={agentSetKey}
               onChange={handleAgentChange}
               className="appearance-none border border-gray-300 rounded-lg text-base px-2 py-1 pr-8 cursor-pointer font-normal focus:outline-none"
@@ -796,6 +794,7 @@ function App() {
               </label>
               <div className="relative inline-block">
                 <select
+                  title="Select Agent"
                   value={selectedAgentName}
                   onChange={handleSelectedAgentChange}
                   className="appearance-none border border-gray-300 rounded-lg text-base px-2 py-1 pr-8 cursor-pointer font-normal focus:outline-none"
