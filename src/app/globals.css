@@ -3,8 +3,13 @@
 @tailwind utilities;
 
 :root {
-	--background: #fafafa;
-	--foreground: #171717;
+	/* === CUSTOM SETTINGS: WHITE MODE === */
+	/* --background: #ffffff;
+	--foreground: #171717; */
+
+	/* === CUSTOM SETTINGS: BLACK MODE === */
+	--background: #000000;
+	--foreground: #ffffff;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -19,4 +24,8 @@ body {
 	background: var(--background);
 	font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
 		"Helvetica Neue", Arial, "Noto Sans", sans-serif;
+}
+
+.bg-blu {
+	background-color: rgba(0, 122, 255, 0.4);
 }

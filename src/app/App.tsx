@@ -85,8 +85,10 @@ function App() {
   const [sessionStatus, setSessionStatus] =
     useState<SessionStatus>("DISCONNECTED");
 
+  // === CUSTOM SETTINGS: Switch to false to hide the logs ===
   const [isEventsPaneExpanded, setIsEventsPaneExpanded] =
-    useState<boolean>(true);
+    useState<boolean>(false);
+
   const [userText, setUserText] = useState<string>("");
   const [isPTTActive, setIsPTTActive] = useState<boolean>(false);
   const [isPTTUserSpeaking, setIsPTTUserSpeaking] = useState<boolean>(false);
@@ -135,6 +137,7 @@ function App() {
     setSelectedAgentConfigSet(agents);
   }, [searchParams]);
 
+  // === CUSTOM SETTINGS: Comment out to not connect to the agent ===
   useEffect(() => {
     if (selectedAgentName && sessionStatus === "DISCONNECTED") {
       connectToRealtime();
@@ -670,6 +673,10 @@ function App() {
     if (storedAudioPlaybackEnabled) {
       setIsAudioPlaybackEnabled(storedAudioPlaybackEnabled === "true");
     }
+
+
+    // === CUSTOM SETTINGS: Uncomment to hide the logs ===
+    setIsEventsPaneExpanded(false);
   }, []);
 
   useEffect(() => {
@@ -740,8 +747,8 @@ function App() {
   const agentSetKey = searchParams.get("agentConfig") || "default";
 
   return (
-    <div className="text-base flex flex-col h-screen bg-gray-100 text-gray-800 relative">
-      <div className="flex flex-1 gap-2 px-2 overflow-hidden relative">
+    <div className="text-base flex flex-col h-screen text-gray-800 relative">
+      <div className="flex flex-1 gap-2 overflow-hidden relative">
         <Transcript
           userText={userText}
           setUserText={setUserText}
@@ -755,22 +762,6 @@ function App() {
 
         <Events isExpanded={isEventsPaneExpanded} />
       </div>
-
-      <BottomToolbar
-        sessionStatus={sessionStatus}
-        onToggleConnection={onToggleConnection}
-        isPTTActive={isPTTActive}
-        setIsPTTActive={setIsPTTActive}
-        isPTTUserSpeaking={isPTTUserSpeaking}
-        handleTalkButtonDown={handleTalkButtonDown}
-        handleTalkButtonUp={handleTalkButtonUp}
-        isEventsPaneExpanded={isEventsPaneExpanded}
-        setIsEventsPaneExpanded={setIsEventsPaneExpanded}
-        isAudioPlaybackEnabled={isAudioPlaybackEnabled}
-        setIsAudioPlaybackEnabled={setIsAudioPlaybackEnabled}
-        codec={urlCodec}
-        onCodecChange={handleCodecChange}
-      />
     </div>
   );
 }
