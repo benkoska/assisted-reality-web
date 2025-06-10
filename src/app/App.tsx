@@ -499,7 +499,7 @@ function App() {
 
         await client.connect();
       } catch (err) {
-        console.error("Error connecting via SDK:", err);
+        console.error("Error connecting via SDK:", err.message);
         setSessionStatus("DISCONNECTED");
       }
       return;
@@ -747,7 +747,7 @@ function App() {
   const agentSetKey = searchParams.get("agentConfig") || "default";
 
   return (
-    <div className="text-base flex flex-col h-screen text-gray-800 relative">
+    <div className="text-base flex flex-col h-screen w-[50vw] text-gray-800 relative">
       <div className="flex flex-1 gap-2 overflow-hidden relative">
         <Transcript
           userText={userText}
