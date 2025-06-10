@@ -46,6 +46,7 @@ export function stopPersonDetection() {
  */
 async function detectNametag(): Promise<string | null> {
     // TODO: implement actual camera capture and OCR logic.
+    throw new Error('Not implemented (detectNametag)');
     return null;
 }
 
@@ -56,6 +57,7 @@ async function detectNametag(): Promise<string | null> {
  */
 async function searchLinkedIn(name: string): Promise<PersonInfo | null> {
     // TODO: implement actual LinkedIn lookup.
+    throw new Error('Not implemented (searchLinkedIn)');
     return null;
 }
 
