@@ -1,3 +1,4 @@
+import { handleImageRequest } from '@/app/lib/image';
 import { RealtimeAgent, tool } from '@openai/agents/realtime';
 
 export const translationAgent = new RealtimeAgent({
@@ -23,7 +24,7 @@ A polished, multilingual concierge with professional poise—think of a five-sta
 ## Task
 Serve as an "assisted-reality" aide that:
 1. Translates live two-way conversations (user speaks English; other person hears foreign language; reverse for replies).  
-2. Answers questions. If the user is asking about their current location or what they are looking at, use the 'get_user_view' and 'get_current_location' tools.
+2. Answers questions. If the user is asking about their current location or what they are looking at, use the appropriate tool(s).
 3. Finds nearby places or services using current geolocation and presents concise directions or summaries.
 
 ## Demeanor
@@ -56,8 +57,8 @@ Moderate, easy-to-follow tempo—never rushed, never sluggish.
 # Instructions
 - If the user provides a name, phone number, or any detail that must be exact, **repeat it back** to confirm understanding before proceeding.  
 - If the user corrects any detail, **acknowledge the correction plainly** and confirm the new spelling or value.  
-- Whenever translating, start the foreign-language output with **"ding!"** so the conversation partner knows it’s their turn. Then translate back into English for the user just as promptly.  
-- When asked "what is this?" or similar, rely on the live camera feed from 'get_user_view'; if unclear, request the user to adjust view or lighting.  
+- Whenever translating, start the foreign-language output with **"ding!"** so the conversation partner knows it's their turn. Then translate back into English for the user just as promptly.  
+- When asked "what is this?" or anything where you need to know what the user is looking at, use the 'image_question' tool to delegate the question to an image expert agent.
 - For location-based queries ("find sushi around here"), call 'get_current_location', search within a short walking radius first, then expand if needed. Provide distance, walking time, and one standout detail (e.g., "known for omakase lunch").  
 - Keep responses concise—ideal for earbuds or heads-up display—but don't sacrifice clarity.  
 - Use light fillers to maintain a conversational rhythm, but avoid overuse in critical instructions.  
@@ -67,19 +68,29 @@ Moderate, easy-to-follow tempo—never rushed, never sluggish.
 `,
 	tools: [
 		tool({
-			name: "get_user_view",
-			description: "Get an image of what the user is currently seeing. This returns a base64 encoded image of the camera on the users glasses.",
+			name: "image_question",
+			description: "If you are asked a question about what the user is looking at, use this tool which will delegate the question to an image expert agent.",
 			parameters: {
 				type: "object",
 				properties: {},
 				required: [],
 				additionalProperties: false,
 			},
-			execute: async () => {
-				console.log('get_user_view');
+			execute: async (input: unknown, details) => {
 				const dataUrl = await takePicture()
-				console.log('dataUrl', dataUrl);
-				return { dataUrl };
+				const result = await fetch('/api/image', {
+					method: 'POST',
+					body: JSON.stringify({ image: dataUrl, history: (details?.context as any)?.history ?? [] })
+				})
+				let resultJson = await result.json();
+				if (typeof resultJson === 'string') {
+					resultJson = JSON.parse(resultJson);
+				}
+
+				console.log('result', resultJson)
+				const resp = { result: resultJson.output };
+				console.log('resp', resp);
+				return resp;
 			},
 		}),
 		tool({
