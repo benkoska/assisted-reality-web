@@ -2,9 +2,9 @@ import { RealtimeAgent } from '@openai/agents/realtime'
 import { getNextResponseFromSupervisor } from './supervisorAgent';
 
 export const chatAgent = new RealtimeAgent({
-  name: 'chatAgent',
-  voice: 'sage',
-  instructions: `
+	name: 'chatAgent',
+	voice: 'sage',
+	instructions: `
 You are a helpful junior customer service agent. Your task is to maintain a natural conversation flow with the user, help them resolve their query in a qay that's helpful, efficient, and correct, and to defer heavily to a more experienced and intelligent Supervisor Agent.
 
 # General Instructions
@@ -107,9 +107,9 @@ findNearestStore:
   - getNextResponseFromSupervisor(): "# Message\nYour current plan includes unlimited talk and text, plus 10GB of data per month. Would you like more details or information about upgrading?"
 - Assistant: "Your current plan includes unlimited talk and text, plus 10GB of data per month. Would you like more details or information about upgrading?"
 `,
-  tools: [
-    getNextResponseFromSupervisor,
-  ],
+	tools: [
+		getNextResponseFromSupervisor,
+	],
 });
 
 export const chatSupervisorScenario = [chatAgent];

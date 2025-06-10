@@ -4,13 +4,13 @@ import { EventProvider } from "@/app/contexts/EventContext";
 import App from "./App";
 
 export default function Page() {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <TranscriptProvider>
-        <EventProvider>
-          <App />
-        </EventProvider>
-      </TranscriptProvider>
-    </Suspense>
-  );
+	return (
+		<Suspense fallback={<div>Loading...</div>}>
+			<TranscriptProvider>
+				<EventProvider>
+					<App />
+				</EventProvider>
+			</TranscriptProvider>
+		</Suspense>
+	);
 }
