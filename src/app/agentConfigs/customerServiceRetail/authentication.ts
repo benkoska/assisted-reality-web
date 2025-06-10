@@ -1,9 +1,10 @@
 import { handleImageRequest } from '@/app/lib/image';
 import { RealtimeAgent, tool } from '@openai/agents/realtime';
+import { webSearchTool } from '@openai/agents';
 
 export const translationAgent = new RealtimeAgent({
 	name: 'translation',
-	voice: 'sage',
+	voice: 'ash',
 	instructions: 'Translate the user\'s message into the target language. If the user is speaking a foreign language, translate it into English. If the user is speaking English, translate it into the target language.',
 	handoffs: [],
 	tools: [],
@@ -62,6 +63,7 @@ Moderate, easy-to-follow tempo—never rushed, never sluggish.
 - For location-based queries ("find sushi around here"), call 'get_current_location', search within a short walking radius first, then expand if needed. Provide distance, walking time, and one standout detail (e.g., "known for omakase lunch").  
 - Keep responses concise—ideal for earbuds or heads-up display—but don't sacrifice clarity.  
 - Use light fillers to maintain a conversational rhythm, but avoid overuse in critical instructions.  
+- The user may ask you to store data in their session. Use the 'store_data' tool to do this, then retrieve it with 'get_data' if you need it in a future session.
 
 # Conversation States
 []
@@ -95,7 +97,7 @@ Moderate, easy-to-follow tempo—never rushed, never sluggish.
 		}),
 		tool({
 			name: "get_current_location",
-			description: "Get the current location of the user. This returns the current geolocation of the user as well as the closest location.",
+			description: "Get the current location of the user. This returns the current geolocation of the user as an object with latitude, longitude, and accuracy.",
 			parameters: {
 				type: "object",
 				properties: {},
@@ -108,12 +110,50 @@ Moderate, easy-to-follow tempo—never rushed, never sluggish.
 				console.log('geolocation', geolocation);
 				return { geolocation };
 			},
+		}),
+		tool({
+			name: "store_data",
+			description: "Store data in the user's session. This data will be available to you in the future.",
+			parameters: {
+				type: "object",
+				properties: {
+					key: { type: "string", description: "The key to store the data under" },
+					value: { type: "string", description: "The data to store" },
+				},
+				required: ['key', 'value'],
+				additionalProperties: false,
+			},
+			execute: async (input: unknown, details) => {
+				console.log('store_data', input);
+				const { key, value } = input as { key: string, value: string };
+				localStorage.setItem(key, value);
+				return { success: true };
+			},
+		}),
+		tool({
+			name: "get_data",
+			description: "Get's all the data that you stored previously with store_data. This returns a JSON object with all the keys and values.",
+			parameters: {
+				type: "object",
+				properties: {},
+				required: ['key'],
+				additionalProperties: false,
+			},
+			execute: async (input: unknown, details) => {
+				const data = Object.fromEntries(Object.entries(localStorage).map(([key, value]) => [key, value]));
+				return { data };
+			},
+		}),
+		webSearchTool({
+			searchContextSize: 'low'
 		})
 	],
 	handoffs: [
 		translationAgent
 	]
 });
+
+console.log(baseAgent.tools)
 
 /**
  * getUserGeolocation
@@ -162,12 +202,13 @@ async function takePicture({ quality = 0.8 } = {}) {
 		// 2) Draw one frame into an offscreen <video> and <canvas>
 		const video = document.createElement("video");
 		video.srcObject = stream;
-		// must play video to have a frame ready
-		await video.play();
+		await video.play()
 
 		const canvas = document.createElement("canvas");
 		canvas.width = video.videoWidth;
 		canvas.height = video.videoHeight;
+
+		await new Promise((resolve, reject) => setTimeout(() => resolve(true), 700))
 
 		const ctx = canvas.getContext("2d");
 		if (!ctx) {
