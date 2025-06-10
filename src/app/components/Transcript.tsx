@@ -13,9 +13,19 @@ export interface TranscriptProps {
 	onSendMessage: () => void;
 	canSend: boolean;
 	downloadRecording: () => void;
+	userText: string;
+	setUserText: (val: string) => void;
+	onSendMessage: () => void;
+	canSend: boolean;
+	downloadRecording: () => void;
 }
 
 function Transcript({
+	userText,
+	setUserText,
+	onSendMessage,
+	canSend,
+	downloadRecording,
 	userText,
 	setUserText,
 	onSendMessage,
@@ -27,7 +37,17 @@ function Transcript({
 	const [prevLogs, setPrevLogs] = useState<TranscriptItem[]>([]);
 	const [justCopied, setJustCopied] = useState(false);
 	const inputRef = useRef<HTMLInputElement | null>(null);
+	const { transcriptItems, toggleTranscriptItemExpand } = useTranscript();
+	const transcriptRef = useRef<HTMLDivElement | null>(null);
+	const [prevLogs, setPrevLogs] = useState<TranscriptItem[]>([]);
+	const [justCopied, setJustCopied] = useState(false);
+	const inputRef = useRef<HTMLInputElement | null>(null);
 
+	function scrollToBottom() {
+		if (transcriptRef.current) {
+			transcriptRef.current.scrollTop = transcriptRef.current.scrollHeight;
+		}
+	}
 	function scrollToBottom() {
 		if (transcriptRef.current) {
 			transcriptRef.current.scrollTop = transcriptRef.current.scrollHeight;
@@ -43,14 +63,34 @@ function Transcript({
 				(newItem.title !== oldItem.title || newItem.data !== oldItem.data)
 			);
 		});
+	useEffect(() => {
+		const hasNewMessage = transcriptItems.length > prevLogs.length;
+		const hasUpdatedMessage = transcriptItems.some((newItem, index) => {
+			const oldItem = prevLogs[index];
+			return (
+				oldItem &&
+				(newItem.title !== oldItem.title || newItem.data !== oldItem.data)
+			);
+		});
 
+		if (hasNewMessage || hasUpdatedMessage) {
+			scrollToBottom();
+		}
 		if (hasNewMessage || hasUpdatedMessage) {
 			scrollToBottom();
 		}
 
 		setPrevLogs(transcriptItems);
 	}, [transcriptItems]);
+		setPrevLogs(transcriptItems);
+	}, [transcriptItems]);
 
+	// Autofocus on text box input on load
+	useEffect(() => {
+		if (canSend && inputRef.current) {
+			inputRef.current.focus();
+		}
+	}, [canSend]);
 	// Autofocus on text box input on load
 	useEffect(() => {
 		if (canSend && inputRef.current) {
@@ -68,7 +108,39 @@ function Transcript({
 			console.error("Failed to copy transcript:", error);
 		}
 	};
+	const handleCopyTranscript = async () => {
+		if (!transcriptRef.current) return;
+		try {
+			await navigator.clipboard.writeText(transcriptRef.current.innerText);
+			setJustCopied(true);
+			setTimeout(() => setJustCopied(false), 1500);
+		} catch (error) {
+			console.error("Failed to copy transcript:", error);
+		}
+	};
 
+	return (
+		<div className="flex flex-col flex-1 bg-white min-h-0 rounded-xl">
+			<div className="flex flex-col flex-1 min-h-0">
+				<div className="flex items-center justify-between px-6 py-3 sticky top-0 z-10 text-base border-b bg-white rounded-t-xl">
+					<span className="font-semibold">Transcript</span>
+					<div className="flex gap-x-2">
+						<button
+							onClick={handleCopyTranscript}
+							className="w-24 text-sm px-3 py-1 rounded-md bg-gray-200 hover:bg-gray-300 flex items-center justify-center gap-x-1"
+						>
+							<ClipboardCopyIcon />
+							{justCopied ? "Copied!" : "Copy"}
+						</button>
+						<button
+							onClick={downloadRecording}
+							className="w-40 text-sm px-3 py-1 rounded-md bg-gray-200 hover:bg-gray-300 flex items-center justify-center gap-x-1"
+						>
+							<DownloadIcon />
+							<span>Download Audio</span>
+						</button>
+					</div>
+				</div>
 	return (
 		<div className="flex flex-col flex-1 bg-white min-h-0 rounded-xl">
 			<div className="flex flex-col flex-1 min-h-0">
@@ -114,7 +186,24 @@ function Transcript({
 							if (isHidden) {
 								return null;
 							}
+							if (isHidden) {
+								return null;
+							}
 
+							if (type === "MESSAGE") {
+								const isUser = role === "user";
+								const containerClasses = `flex justify-end flex-col ${isUser ? "items-end" : "items-start"
+									}`;
+								const bubbleBase = `max-w-lg p-3 ${isUser ? "bg-gray-900 text-gray-100" : "bg-gray-100 text-black"
+									}`;
+								const isBracketedMessage =
+									title.startsWith("[") && title.endsWith("]");
+								const messageStyle = isBracketedMessage
+									? "italic text-gray-400"
+									: "";
+								const displayTitle = isBracketedMessage
+									? title.slice(1, -1)
+									: title;
 							if (type === "MESSAGE") {
 								const isUser = role === "user";
 								const containerClasses = `flex justify-end flex-col ${isUser ? "items-end" : "items-start"
@@ -196,6 +285,30 @@ function Transcript({
 				</div>
 			</div>
 
+			<div className="p-4 flex items-center gap-x-2 flex-shrink-0 border-t border-gray-200">
+				<input
+					ref={inputRef}
+					type="text"
+					value={userText}
+					onChange={(e) => setUserText(e.target.value)}
+					onKeyDown={(e) => {
+						if (e.key === "Enter" && canSend) {
+							onSendMessage();
+						}
+					}}
+					className="flex-1 px-4 py-2 focus:outline-none"
+					placeholder="Type a message..."
+				/>
+				<button
+					onClick={onSendMessage}
+					disabled={!canSend || !userText.trim()}
+					className="bg-gray-900 text-white rounded-full px-2 py-2 disabled:opacity-50"
+				>
+					<Image src="arrow.svg" alt="Send" width={24} height={24} />
+				</button>
+			</div>
+		</div>
+	);
 			<div className="p-4 flex items-center gap-x-2 flex-shrink-0 border-t border-gray-200">
 				<input
 					ref={inputRef}
