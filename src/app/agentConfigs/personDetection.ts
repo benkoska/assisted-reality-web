@@ -19,9 +19,15 @@ export function startPersonDetection() {
     (window as any).__personDetectionInterval = window.setInterval(async () => {
         const name = await detectNametag();
         if (!name) return;
-        const info = await searchLinkedIn(name);
-        if (info) {
-            displayPersonInfo(info);
+
+        try {
+            const resp = await fetch(`/api/linkedin?name=${encodeURIComponent(name)}`);
+            if (resp.ok) {
+                const info = (await resp.json()) as PersonInfo;
+                displayPersonInfo(info);
+            }
+        } catch (err) {
+            console.error('LinkedIn lookup failed', err);
         }
     }, 2000);
 }
@@ -47,17 +53,6 @@ export function stopPersonDetection() {
 async function detectNametag(): Promise<string | null> {
     // TODO: implement actual camera capture and OCR logic.
     throw new Error('Not implemented (detectNametag)');
-    return null;
-}
-
-/**
- * searchLinkedIn
- * Stubbed function that should query the LinkedIn API to fetch information
- * about the person with the provided name.
- */
-async function searchLinkedIn(name: string): Promise<PersonInfo | null> {
-    // TODO: implement actual LinkedIn lookup.
-    throw new Error('Not implemented (searchLinkedIn)');
     return null;
 }
 
@@ -101,7 +96,7 @@ function displayPersonInfo(info: PersonInfo) {
 export const personDetectionAgent = new RealtimeAgent({
     name: 'personDetection',
     voice: 'sage',
-    instructions: `Periodically scan the camera feed for a person's name tag and display their LinkedIn info when found.`,
+    instructions: `Periodically scan the camera feed for a person's name tag and display their LinkedIn info when found. This agent performs the LinkedIn lookup itself.`,
     handoffs: [],
     tools: [
         tool({
